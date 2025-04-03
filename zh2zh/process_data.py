@@ -1,3 +1,4 @@
+import random
 import re
 
 import numpy as np
@@ -56,12 +57,13 @@ def load_sentence_pairs(src_fname, tgt_fname):
 
 
 def filter_sentence_pairs(pairs):
-    return list(
+    filtered = list(
         filter(
             lambda p: len(p[0].split()) < MAX_LENGTH and len(p[1].split()) < MAX_LENGTH,
             pairs,
         )
     )
+    return random.sample(filtered, 10000)
 
 
 def tokenize_sentence(sentence, lang):
@@ -71,9 +73,6 @@ def tokenize_sentence(sentence, lang):
 def get_dataloader(src_fname, tgt_fname, batch_size):
     pairs = load_sentence_pairs(src_fname, tgt_fname)
     print("Original pairs:", len(pairs))
-    pairs = filter_sentence_pairs(pairs)
-    print("Filtered pairs:", len(pairs))
-    print()
 
     # Further filtering for debugging
     # pairs = pairs[:1000]
@@ -84,6 +83,10 @@ def get_dataloader(src_fname, tgt_fname, batch_size):
     for src_sentence, tgt_sentence in pairs:
         src_lang.add_sentence(src_sentence)
         tgt_lang.add_sentence(tgt_sentence)
+
+    pairs = filter_sentence_pairs(pairs)
+    print("Filtered pairs:", len(pairs))
+    print()
 
     n = len(pairs)
     max_length = max(src_lang.max_length, tgt_lang.max_length)

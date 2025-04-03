@@ -3,7 +3,14 @@ from process_data import get_dataloader
 from model import Seq2SeqEncoder, Seq2SeqDecoder
 from train import train
 from eval import evaluate_randomly
-from constants import ENCODER_FNAME, DECODER_FNAME, SRC_FNAME, TGT_FNAME
+from constants import (
+    DEV_SRC_FNAME,
+    DEV_TGT_FNAME,
+    ENCODER_FNAME,
+    DECODER_FNAME,
+    TRAIN_SRC_FNAME,
+    TRAIN_TGT_FNAME,
+)
 
 
 def train_models():
@@ -11,7 +18,7 @@ def train_models():
     batch_size = 32
 
     input_lang, output_lang, train_dataloader, pairs = get_dataloader(
-        SRC_FNAME, TGT_FNAME, batch_size
+        TRAIN_SRC_FNAME, TRAIN_TGT_FNAME, batch_size
     )
 
     print("Input words:", input_lang.n_words)
@@ -33,7 +40,7 @@ def train_models():
         output_lang.n_words, hidden_size, hidden_size, output_lang.max_length
     )
 
-    train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
+    train(train_dataloader, encoder, decoder, 80, print_every=1, plot_every=1)
 
     torch.save(encoder.state_dict(), ENCODER_FNAME)
     torch.save(decoder.state_dict(), DECODER_FNAME)
@@ -44,7 +51,7 @@ def eval_models():
     batch_size = 32
 
     input_lang, output_lang, train_dataloader, pairs = get_dataloader(
-        SRC_FNAME, TGT_FNAME, batch_size
+        TRAIN_SRC_FNAME, TRAIN_TGT_FNAME, batch_size
     )
 
     print("Input words:", input_lang.n_words)
@@ -75,4 +82,5 @@ def eval_models():
 
 
 if __name__ == "__main__":
-    train_models()
+    # train_models()
+    eval_models()
