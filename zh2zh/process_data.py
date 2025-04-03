@@ -4,7 +4,7 @@ import re
 import numpy as np
 import torch
 
-from constants import EOS_TOKEN, MAX_LENGTH
+from constants import EOS_TOKEN, MAX_LENGTH, device
 
 
 class Lang:
@@ -109,7 +109,7 @@ def get_dataloader(src_fname, tgt_fname, batch_size):
     print("All input tensors validated")
 
     train_data = torch.utils.data.TensorDataset(
-        torch.LongTensor(src_tokens), torch.LongTensor(tgt_tokens)
+        torch.LongTensor(src_tokens).to(device), torch.LongTensor(tgt_tokens).to(device)
     )
 
     train_sampler = torch.utils.data.RandomSampler(train_data)

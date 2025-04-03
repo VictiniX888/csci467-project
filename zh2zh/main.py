@@ -1,15 +1,17 @@
 import torch
 from process_data import get_dataloader
-from model import Seq2SeqEncoder, Seq2SeqDecoder
+from model import RNNDecoder, RNNEncoder, Seq2SeqEncoder, Seq2SeqDecoder
 from train import train
 from eval import evaluate_randomly
 from constants import (
+    BASELINE,
     DEV_SRC_FNAME,
     DEV_TGT_FNAME,
     ENCODER_FNAME,
     DECODER_FNAME,
     TRAIN_SRC_FNAME,
     TRAIN_TGT_FNAME,
+    device,
 )
 
 
@@ -35,15 +37,27 @@ def train_models():
         print(i, output_lang.index2word[i])
     print()
 
-    encoder = Seq2SeqEncoder(input_lang.n_words, hidden_size, hidden_size)
-    decoder = Seq2SeqDecoder(
-        output_lang.n_words, hidden_size, hidden_size, output_lang.max_length
-    )
+    if BASELINE:
+        encoder = RNNEncoder(input_lang.n_words, hidden_size, hidden_size).to(device)
+        decoder = RNNDecoder(
+            output_lang.n_words, hidden_size, hidden_size, output_lang.max_length
+        ).to(device)
+    else:
+        encoder = Seq2SeqEncoder(input_lang.n_words, hidden_size, hidden_size).to(
+            device
+        )
+        decoder = Seq2SeqDecoder(
+            output_lang.n_words, hidden_size, hidden_size, output_lang.max_length
+        ).to(device)
 
     train(train_dataloader, encoder, decoder, 80, print_every=1, plot_every=1)
 
-    torch.save(encoder.state_dict(), ENCODER_FNAME)
-    torch.save(decoder.state_dict(), DECODER_FNAME)
+    if BASELINE:
+        torch.save(encoder.state_dict(), f"baseline.{ENCODER_FNAME}")
+        torch.save(decoder.state_dict(), f"baseline.{DECODER_FNAME}")
+    else:
+        torch.save(encoder.state_dict(), ENCODER_FNAME)
+        torch.save(decoder.state_dict(), DECODER_FNAME)
 
 
 def eval_models():
@@ -68,12 +82,12 @@ def eval_models():
         print(i, output_lang.index2word[i])
     print()
 
-    encoder = Seq2SeqEncoder(input_lang.n_words, hidden_size, hidden_size)
+    encoder = Seq2SeqEncoder(input_lang.n_words, hidden_size, hidden_size).to(device)
     encoder.load_state_dict(torch.load(ENCODER_FNAME, weights_only=True))
 
     decoder = Seq2SeqDecoder(
         output_lang.n_words, hidden_size, hidden_size, output_lang.max_length
-    )
+    ).to(device)
     decoder.load_state_dict(torch.load(DECODER_FNAME, weights_only=True))
 
     encoder.eval()

@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from constants import DECODER_FNAME, ENCODER_FNAME, EOS_TOKEN
+from constants import BASELINE, DECODER_FNAME, ENCODER_FNAME, EOS_TOKEN
 
 
 # Adapted from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
@@ -114,7 +114,11 @@ def train(
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
 
-        torch.save(encoder.state_dict(), f"{ENCODER_FNAME}.{epoch}")
-        torch.save(decoder.state_dict(), f"{DECODER_FNAME}.{epoch}")
+        if BASELINE:
+            torch.save(encoder.state_dict(), f"baseline.{ENCODER_FNAME}.{epoch}")
+            torch.save(decoder.state_dict(), f"baseline.{DECODER_FNAME}.{epoch}")
+        else:
+            torch.save(encoder.state_dict(), f"{ENCODER_FNAME}.{epoch}")
+            torch.save(decoder.state_dict(), f"{DECODER_FNAME}.{epoch}")
 
     showPlot(plot_losses)

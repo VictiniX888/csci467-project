@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from constants import SOS_TOKEN, EOS_TOKEN
+from constants import SOS_TOKEN, device
 
 
 # Adapted from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
@@ -55,7 +55,9 @@ class Seq2SeqDecoder(nn.Module):
         self, encoder_outputs, encoder_hidden, encoder_cell, target_tensor=None
     ):
         B = encoder_outputs.size(0)
-        decoder_input = torch.empty(B, 1, dtype=torch.long).fill_(SOS_TOKEN)
+        decoder_input = torch.empty(B, 1, dtype=torch.long, device=device).fill_(
+            SOS_TOKEN
+        )
         decoder_hidden = encoder_hidden
         decoder_cell = encoder_cell
         decoder_outputs = []
@@ -93,3 +95,58 @@ class Seq2SeqDecoder(nn.Module):
         output, (hn, cn) = self.lstm(lstm_input, (decoder_hidden, decoder_cell))
         output = self.out(output)
         return output, hn, cn, attn_weights
+
+
+class RNNEncoder(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, rnn_dim):
+        super(RNNEncoder, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.rnn = nn.RNN(embedding_dim, rnn_dim, batch_first=True)
+
+    def forward(self, x):
+        embedded = self.embedding(x)
+        output, hn = self.rnn(embedded)
+        return output
+
+
+class RNNDecoder(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, rnn_dim, max_length):
+        super(RNNDecoder, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.rnn = nn.RNN(2 * embedding_dim, rnn_dim, batch_first=True)
+        self.out = nn.Linear(rnn_dim, vocab_size)
+
+        self.max_length = max_length
+
+    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+        B = encoder_outputs.size(0)
+        decoder_input = torch.empty(B, 1, dtype=torch.long, device=device).fill_(
+            SOS_TOKEN
+        )
+        decoder_hidden = encoder_hidden
+        decoder_outputs = []
+
+        for i in range(self.max_length):
+            decoder_output, decoder_hidden = self.forward_step(
+                decoder_input, decoder_hidden
+            )
+            decoder_outputs.append(decoder_output)
+
+            if target_tensor is not None:
+                # Teacher forcing
+                decoder_input = target_tensor[:, i].unsqueeze(1)
+            else:
+                # Without teacher forcing
+                _, topi = decoder_output.topk(1)
+                decoder_input = topi.squeeze(-1).detach()
+
+        decoder_outputs = torch.cat(decoder_outputs, dim=1)
+        decoder_outputs = F.log_softmax(decoder_outputs, dim=-1)
+
+        return decoder_outputs, decoder_hidden
+
+    def forward_step(self, input, decoder_hidden):
+        embedded = self.embedding(input)
+        output, hn = self.rnn(embedded, decoder_hidden)
+        output = self.out(output)
+        return output, hn

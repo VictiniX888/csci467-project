@@ -1,3 +1,6 @@
+import torch
+
+
 SOS_TOKEN = 0
 EOS_TOKEN = 1
 
@@ -29,3 +32,6 @@ ENCODER_FNAME = (
 DECODER_FNAME = (
     r"C:\Users\User\Documents\USC\2025 Spring\CSCI 467\project\data\zh2zh\decoder.pt"
 )
+BASELINE = False
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
