@@ -106,14 +106,14 @@ class RNNEncoder(nn.Module):
     def forward(self, x):
         embedded = self.embedding(x)
         output, hn = self.rnn(embedded)
-        return output
+        return output, hn
 
 
 class RNNDecoder(nn.Module):
     def __init__(self, vocab_size, embedding_dim, rnn_dim, max_length):
         super(RNNDecoder, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.rnn = nn.RNN(2 * embedding_dim, rnn_dim, batch_first=True)
+        self.rnn = nn.RNN(embedding_dim, rnn_dim, batch_first=True)
         self.out = nn.Linear(rnn_dim, vocab_size)
 
         self.max_length = max_length

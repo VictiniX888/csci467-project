@@ -48,10 +48,14 @@ def train_epoch(
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
 
-        encoder_outputs, encoder_hidden, encoder_cell = encoder(input_tensor)
-        decoder_outputs, _, _ = decoder(
-            encoder_outputs, encoder_hidden, encoder_cell, target_tensor
-        )
+        if BASELINE:
+            encoder_outputs, encoder_hidden = encoder(input_tensor)
+            decoder_outputs, _ = decoder(encoder_outputs, encoder_hidden, target_tensor)
+        else:
+            encoder_outputs, encoder_hidden, encoder_cell = encoder(input_tensor)
+            decoder_outputs, _, _ = decoder(
+                encoder_outputs, encoder_hidden, encoder_cell, target_tensor
+            )
 
         loss = criterion(
             decoder_outputs.view(-1, decoder_outputs.size(-1)), target_tensor.view(-1)
@@ -115,8 +119,8 @@ def train(
             plot_loss_total = 0
 
         if BASELINE:
-            torch.save(encoder.state_dict(), f"baseline.{ENCODER_FNAME}.{epoch}")
-            torch.save(decoder.state_dict(), f"baseline.{DECODER_FNAME}.{epoch}")
+            torch.save(encoder.state_dict(), f"{ENCODER_FNAME}.baseline.{epoch}")
+            torch.save(decoder.state_dict(), f"{DECODER_FNAME}.baseline.{epoch}")
         else:
             torch.save(encoder.state_dict(), f"{ENCODER_FNAME}.{epoch}")
             torch.save(decoder.state_dict(), f"{DECODER_FNAME}.{epoch}")
