@@ -26,5 +26,13 @@ encoder.eval()
 decoder.eval()
 evaluate_randomly(encoder, decoder, pairs, inLang, outLang)
 
+inLang2, outLang2, dataloader2, pairs2 = get_dataloader("test.modern.txt", "test.original.txt", 256)
 
+for word, index in inLang.word2index.items():
+  inLang2.addWord(word)
+
+for word, index in outLang.word2index.items():
+  outLang2.addWord(word)
+
+evaluate_all(encoder, decoder, pairs2, inLang2, outLang2)
 
