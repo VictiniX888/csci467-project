@@ -73,7 +73,7 @@ def compute_bleu(hyps, refs):
     print(hyps)
     print(refs)
 
-    bleu = BLEU(trg_lang="zh")
+    bleu = BLEU(trg_lang="en")
     score = bleu.corpus_score(hyps, refs)
     return score
 
@@ -83,7 +83,7 @@ def compute_bertscore(hyps, refs):
     hyps = ["".join(sentence) for sentence in hyps]
     refs = ["".join(sentence.split()) for sentence in refs]
 
-    bert = BERTScorer(lang="zh", rescale_with_baseline=True)
+    bert = BERTScorer(lang="en", rescale_with_baseline=True)
     P, R, F1 = bert.score(hyps, refs)
     return P, R, F1
 

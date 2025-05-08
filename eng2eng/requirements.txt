@@ -1,0 +1,12 @@
+torch 
+numpy 
+sacrebleu
+bert_score
+matplotlib
+tqdm
+transformers
+SentencePiece
+protobuf
+transformers[torch]
+huggingface_hub
+datasets
