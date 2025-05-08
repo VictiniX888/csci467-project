@@ -1,0 +1,9 @@
+datasets
+evaluate
+transformers
+torch
+nltk
+absl-py
+rouge_score
+sacrebleu
+accelerate>=0.26.0
