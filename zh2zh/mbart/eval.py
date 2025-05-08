@@ -41,9 +41,7 @@ test_data = load_dataset(TEST_SRC_FNAME, TEST_TGT_FNAME)
 
 
 # map data correctly
-def generate_summary(batch):
-    # Tokenizer will automatically set [BOS] <text> [EOS]
-    # cut off at BERT max length 512
+def generate_pred(batch):
     inputs = tokenizer(
         batch["src"],
         padding="max_length",
@@ -64,7 +62,7 @@ def generate_summary(batch):
     return batch
 
 
-results = test_data.map(generate_summary, batched=True, batch_size=batch_size)
+results = test_data.map(generate_pred, batched=True, batch_size=batch_size)
 
 orig_str = results["src"]
 pred_str = results["pred"]
