@@ -66,7 +66,7 @@ def eval_models_sample():
     batch_size = 16
 
     input_lang, output_lang, train_dataloader, pairs = get_dataloader(
-        TRAIN_SRC_FNAME, TRAIN_TGT_FNAME, batch_size
+        DEV_SRC_FNAME, DEV_TGT_FNAME, batch_size
     )
 
     print("Input words:", input_lang.n_words)
