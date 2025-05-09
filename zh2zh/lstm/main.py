@@ -64,8 +64,8 @@ def eval_models_sample():
     hidden_size = 128
     batch_size = 32
 
-    input_lang, output_lang, train_dataloader, pairs = get_dataloader(
-        TRAIN_SRC_FNAME, TRAIN_TGT_FNAME, batch_size
+    input_lang, output_lang, dataloader, pairs = get_dataloader(
+        DEV_SRC_FNAME, DEV_TGT_FNAME, batch_size
     )
 
     print("Input words:", input_lang.n_words)
@@ -110,8 +110,8 @@ def eval_models():
     hidden_size = 128
     batch_size = 32
 
-    input_lang, output_lang, train_dataloader, pairs = get_dataloader(
-        TRAIN_SRC_FNAME, TRAIN_TGT_FNAME, batch_size
+    input_lang, output_lang, dataloader, pairs = get_dataloader(
+        DEV_SRC_FNAME, DEV_SRC_FNAME, batch_size
     )
 
     print("Input words:", input_lang.n_words)

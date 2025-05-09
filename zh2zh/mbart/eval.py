@@ -1,6 +1,9 @@
 from datasets import Dataset
 import evaluate
 from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
+import numpy as np
+
+import random
 
 
 def read_zh_data(fname):
@@ -17,8 +20,8 @@ def load_dataset(src_fname, tgt_fname):
     return dataset
 
 
-TEST_SRC_FNAME = "test.src"
-TEST_TGT_FNAME = "test.tgt"
+TEST_SRC_FNAME = "dev.src"
+TEST_TGT_FNAME = "dev.tgt"
 
 batch_size = 16  # change to 64 for full evaluation
 max_length = 30
@@ -32,7 +35,7 @@ tokenizer.eos_token = tokenizer.sep_token
 model = MBartForConditionalGeneration.from_pretrained("./checkpoint-71500")
 model.to("cuda")
 
-sacrebleu = evaluate.load("sacrebleu")
+bertscore = evaluate.load("bertscore")
 
 test_data = load_dataset(TEST_SRC_FNAME, TEST_TGT_FNAME)
 
@@ -69,14 +72,16 @@ pred_str = results["pred"]
 label_str = results["tgt"]
 
 print()
-for i in range(10):
+for i in random.sample(range(len(orig_str)), 10):
     print(orig_str[i])
     print(pred_str[i])
     print(label_str[i])
     print()
 
-sacrebleu_output = sacrebleu.compute(
-    predictions=pred_str, references=label_str, tokenize="zh"
+bertscore_output = bertscore.compute(
+    predictions=pred_str, references=label_str, lang="zh"
 )
 
-print(sacrebleu_output)
+print("Precision", np.mean(bertscore_output["precision"]))
+print("Recall", np.mean(bertscore_output["recall"]))
+print("F1", np.mean(bertscore_output["f1"]))

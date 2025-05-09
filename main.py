@@ -1,10 +1,11 @@
 from datasets import Dataset
 from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
 import evaluate
+import numpy as np
 
 
-TEST_SRC_FNAME = "test.src"
-TEST_TGT_FNAME = "test.tgt"
+TEST_SRC_FNAME = "test_short.src"
+TEST_TGT_FNAME = "test_short.tgt"
 
 batch_size = 16  # change to 64 for full evaluation
 
@@ -63,12 +64,14 @@ def zh2en(dataset):
     max_input_length = 30
 
     tokenizer = MBart50TokenizerFast.from_pretrained(
-        "facebook/mbart-large-50", src_lang="zh_CN", tgt_lang="en_XX"
+        "facebook/mbart-large-50-many-to-many-mmt", src_lang="zh_CN", tgt_lang="en_XX"
     )
     tokenizer.bos_token = tokenizer.cls_token
     tokenizer.eos_token = tokenizer.sep_token
 
-    model = MBartForConditionalGeneration.from_pretrained("./checkpoint-zh2en")
+    model = MBartForConditionalGeneration.from_pretrained(
+        "facebook/mbart-large-50-many-to-many-mmt"
+    )
     model.to("cuda")
 
     def generate_pred(batch):
@@ -133,25 +136,34 @@ def en2en(dataset):
 
 def main():
     test_data = load_dataset(TEST_SRC_FNAME, TEST_TGT_FNAME)
+    # test_data = test_data.shuffle()
+    # test_data = test_data.select(range(10))
 
     data_zh_mod = zh2zh(test_data)
     data_en_mod = zh2en(data_zh_mod)
     results = en2en(data_en_mod)
 
-    orig_str = results["src"]
+    # orig_str = results["src"]
     pred_str = results["en_old"]
     label_str = results["tgt"]
 
     print()
     for i in range(10):
-        print(orig_str[i])
-        print(pred_str[i])
-        print(label_str[i])
+        print(results["src"][i])
+        print(results["zh_mod"][i])
+        print(results["en_mod"][i])
+        print(results["en_old"][i])
+        print(results["tgt"][i])
+        # print(label_str[i])
         print()
 
-    sacrebleu = evaluate.load("sacrebleu")
-    sacrebleu_output = sacrebleu.compute(predictions=pred_str, references=label_str)
-    print(sacrebleu_output)
+    bertscore = evaluate.load("bertscore")
+    bertscore_output = bertscore.compute(
+        predictions=pred_str, references=label_str, lang="en"
+    )
+    print("Precision", np.mean(bertscore_output["precision"]))
+    print("Recall", np.mean(bertscore_output["recall"]))
+    print("F1", np.mean(bertscore_output["f1"]))
 
 
 if __name__ == "__main__":

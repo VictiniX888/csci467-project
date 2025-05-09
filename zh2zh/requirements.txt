@@ -9,4 +9,5 @@ sacrebleu
 accelerate>=0.26.0
 protobuf
 sentencepiece
+bert_score
 transformers[torch]
